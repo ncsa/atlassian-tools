@@ -1,0 +1,10 @@
+# install4j response file for Jira Core 9.11.0
+app.install.service$Boolean=true
+app.jiraHome=/srv/jira/home
+existingInstallationDir=/opt/Jira Core
+launch.application$Boolean=true
+portChoice=default
+sys.adminRights$Boolean=true
+sys.confirmedUpdateInstallationString=false
+sys.installationDir=/srv/jira/app
+sys.languageId=en
