@@ -20,4 +20,5 @@ for ps_name in "${PUPPET_SERVICES_TO_STOP[@]}"; do
 done
 
 # Prevent future puppet runs
-puppet agent --disable "puppet stopped on cloned test server"
+$action puppet agent --disable "puppet stopped on cloned test server"
+$action rm -rf /etc/puppetlabs/puppet/ssl

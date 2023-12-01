@@ -7,7 +7,6 @@ BASE=/root/atlassian-tools
 
 [[ $VERBOSE -eq $YES ]] && set -x
 
-[[ -d "$APP_INSTALL_DIR" ]] || die "APP_INSTALL_DIR, '$APP_INSTALL_DIR', not found"
 SETENV="${APP_INSTALL_DIR}"/bin/setenv.sh
 [[ -f "$SETENV" ]] || die "File not found, SETENV: '$SETENV'"
 

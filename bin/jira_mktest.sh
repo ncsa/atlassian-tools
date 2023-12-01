@@ -2,11 +2,9 @@
 
 BASE=/root/atlassian-tools
 BIN="$BASE"/bin
-CONF="$BASE"/conf
-LIB="$BASE"/lib
 
-. "$CONF"/config.sh
-. "$LIB"/utils.sh
+. "$BASE"/conf/config.sh
+. "$BASE"/lib/utils.sh
 
 [[ $VERBOSE -eq $YES ]] && set -x
 
@@ -17,13 +15,12 @@ LIB="$BASE"/lib
 
 "$BIN"/disable_notifications.sh
 
-"$BIN"/fix_keytab.sh
-
 "$BIN"/fix_network.sh
 
 "$BIN"/fix_cron.sh
 
 "$BIN"/fix_hostname.sh
 
-# Depends on fix_hostname
 "$BIN"/fix_app_config.sh
+
+"$BIN"/fix_keytab.sh

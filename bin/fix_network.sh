@@ -10,11 +10,6 @@ BASE=/root/atlassian-tools
 IFCFG=( $(find /etc/sysconfig/network-scripts/ -maxdepth 1 -type f -name 'ifcfg-eno1*' -print) )
 [[ "${#IFCFG[@]}" -gt 1 ]] && die "Multiple ifcfg files found"
 
-if [[ -z "$IPADDR_NEW" ]] ; then
-  IPADDR_NEW=$( ask_user 'Enter new IP: ')
-fi
-
-[[ -z "$IPADDR_NEW" ]] && die 'missing new IP'
 
 sed_opts=( '-i' )
 [[ $DEBUG -eq $YES ]] && unset sed_opts

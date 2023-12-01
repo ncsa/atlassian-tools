@@ -8,10 +8,12 @@ BASE=/root/atlassian-tools
 [[ $VERBOSE -eq $YES ]] && set -x
 [[ $DEBUG -eq $YES ]] && action='echo'
 
-HOSTNAME=$( get_hostname )
-KEYTAB_OLD=/etc/krb5.keytab
-KEYTAB_NEW="${KEYTAB_OLD}.${HOSTNAME}"
+KEYTAB=/etc/krb5.keytab
+KEYTAB_NEW="${KEYTAB}.${HOSTNAME_NEW}"
 
+# move old keytab aside
+$action mv "$KEYTAB" "${KEYTAB}.${HOSTNAME_OLD}"
+
+# put new keytab in place
 [[ -f "${KEYTAB_NEW}" ]] || die "cant find keytab file '${KEYTAB_NEW}'"
-
-$action cp "${KEYTAB_OLD}" "${KEYTAB_NEW}"
+$action ln -s "${KEYTAB_NEW}" "${KEYTAB}" 
