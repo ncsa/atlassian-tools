@@ -3,3 +3,9 @@
 
 # password files
 *.pwd
+*.cnf
+
+# test files
+*.input
+*.ids
+output

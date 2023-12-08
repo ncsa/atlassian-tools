@@ -19,13 +19,19 @@ Create a copy of prod for testing
    1. Clone the prod server to a test VM
    1. Disconnect the network on the test server
    1. Start the test server
-   1. On the console of the test server, run:
+   1. Login as root on the console of the test server
       1. `/root/atlassian-tools/bin/jira_mktest.sh`
       1. `/root/atlassian-tools/bin/jira_validate.sh`
       1. `shutdown -h now`
    1. Ensure test VM is powered off
    1. Re-enable the network
    1. Power-on the test VM
+1. root@aesculus
+   1. `bash /home/aloftus/mk-jira-test-db.sh`
+1. root@jira-test
+   1. `bash /root/atlassian-tools/bin/jira_fix_web.sh`
+   1. `/usr/services/jira-standalone/bin/start-jira.sh`
+   1. `tail -f /usr/services/jira-standalone/logs/catalina.out`
 
 # Install / Upgrade Jira
 This should also work for Confluence, but is untested as of 6 Oct 2023.
@@ -46,3 +52,14 @@ This should also work for Confluence, but is untested as of 6 Oct 2023.
       1. Run the installer file manually, choose option 3 (upgrade)
       1. Restore the server.xml file:
          1. `/home/<USER>/<APP>/02_installer.sh -c`
+
+# Migration cleanup
+This requires docker. Will create a local Docker container running an image of
+containing this git repo. (Tested on Ubuntu 22.04.3 LTS.)
+
+1. Build a test server
+1. Create a file ~/.atlassian-tools-config.sh
+1. Create a file ~/.netrc
+1. `export BRANCH=SVCPLAN-4501/project_cleanup`
+1. `curl -o go_atlassian-tools.sh "https://raw.githubusercontent.com/ncsa/atlassian-tools/${BRANCH:-main}/go.sh"`
+1. `bash go_atlassian-tools.sh`
