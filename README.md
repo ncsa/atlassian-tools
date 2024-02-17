@@ -9,7 +9,7 @@ export QS_GIT_REPO=https://github.com/ncsa/atlassian-tools.git
 curl https://raw.githubusercontent.com/andylytical/quickstart/main/quickstart.sh | bash
 ```
 
-# Make a test instance from a clone of prod
+# Create a test instance on a clone of prod
 Create a copy of prod for testing
 1. Prod server:
    1. Install this repo via the instructions above
@@ -20,21 +20,23 @@ Create a copy of prod for testing
    1. Disconnect the network on the test server
    1. Start the test server
    1. Login as root on the console of the test server
-      1. `/root/atlassian-tools/bin/jira_mktest.sh`
-      1. `/root/atlassian-tools/bin/jira_validate.sh`
+      1. `/root/atlassian-tools/bin/go_mk_test_server.sh`
+      1. `/root/atlassian-tools/bin/go_validate_test_server.sh`
       1. `shutdown -h now`
    1. Ensure test VM is powered off
    1. Re-enable the network
    1. Power-on the test VM
-1. root@aesculus
+1. root@aesculus (only if DB is still remote)
    1. `bash /home/aloftus/mk-jira-test-db.sh`
-1. root@jira-test
-   1. `bash /root/atlassian-tools/bin/jira_fix_web.sh`
-   1. `/usr/services/jira-standalone/bin/start-jira.sh`
-   1. `tail -f /usr/services/jira-standalone/logs/catalina.out`
+1. root@jira-test (or root@wiki-test)
+   1. `bash /root/atlassian-tools/bin/go_fix_web.sh`
+   1. `/usr/services/jira-standalone/bin/start-jira.sh` (OR
+      `/usr/services/confluence/bin/start-confluence.sh`)
+   1. `tail -f /usr/services/jira-standalone/logs/catalina.out` (OR
+      `/usr/services/confluence/logs/catalina.out`)
 
 # Install / Upgrade Jira
-This should also work for Confluence, but is untested as of 6 Oct 2023.
+This also works for Confluence, tested Feb 2024.
 1. Follow the instructions above to create a test VM cloned from prod
 1. Clone this repo to a local machine
 1. `cd atlassian-tools/install-upgrade`

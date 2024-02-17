@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BASE=/root/atlassian-tools
+BASE=${HOME}/atlassian-tools
 BIN="$BASE"/bin
 
 . "$BASE"/conf/config.sh
@@ -9,11 +9,11 @@ BIN="$BASE"/bin
 [[ $VERBOSE -eq $YES ]] && set -x
 
 
-"$BIN"/stop_services.sh
+"$BIN"/set_services.sh disable
 
-"$BIN"/disable_mail.sh
+# "$BIN"/disable_mail.sh
 
-"$BIN"/disable_notifications.sh
+"$BIN"/set_notifications.sh disable
 
 "$BIN"/fix_network.sh
 
