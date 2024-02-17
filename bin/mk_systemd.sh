@@ -47,8 +47,15 @@ ENDHERE
 }
 
 
+enable_service() {
+  systemctl enable ${APP_NAME}.service
+}
+
+
 ###
 # MAIN
 ###
 
 mk_service_file
+
+enable_service

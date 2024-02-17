@@ -4,6 +4,8 @@ NO=1
 ### START OF USER CONFIGURABLE SECTION
 #
 #
+VERBOSE=$YES
+DEBUG=$YES
 
 # These must be set or scripts will refuse to run
 # If no changes needed, set them the same
@@ -15,8 +17,12 @@ HOSTNAME_NEW=$HOSTNAME_OLD
 
 # path to jira / confluence home & install dirs
 APP_NAME=confluence
-APP_HOME_DIR=/srv/confluence/home
-APP_INSTALL_DIR=/srv/confluence/app
+APP_HOME_DIR=/srv/$APP_NAME/home
+APP_INSTALL_DIR=/srv/$APP_NAME/app
+
+# arrays of service names
+SYSTEM_SERVICES_TO_STOP=( puppet telegraf xcatpostinit1 $APP_NAME )
+PUPPET_SERVICES_TO_STOP=( telegraf )
 
 # Jira/Confluence DB names
 # If no changes needed, set them the same
@@ -24,13 +30,6 @@ APP_INSTALL_DIR=/srv/confluence/app
 # TODO - can be removed once all databases are local
 DB_NAME_OLD=
 DB_NAME_NEW=$DB_NAME_OLD
-
-# arrays of service names
-SYSTEM_SERVICES_TO_STOP=( puppet telegraf $APP_NAME )
-PUPPET_SERVICES_TO_STOP=( telegraf )
-
-VERBOSE=$YES
-DEBUG=$YES
 
 #
 #

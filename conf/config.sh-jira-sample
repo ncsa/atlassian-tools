@@ -4,6 +4,8 @@ NO=1
 ### START OF USER CONFIGURABLE SECTION
 #
 #
+VERBOSE=$YES
+DEBUG=$YES
 
 # These must be set or scripts will refuse to run
 # If no changes needed, set them the same
@@ -15,23 +17,24 @@ HOSTNAME_NEW=$HOSTNAME_OLD
 
 # path to jira / confluence home & install dirs
 APP_NAME=jira
-APP_HOME_DIR=/usr/services/jirahome
-APP_INSTALL_DIR=/usr/services/jira-standalone
+#APP_HOME_DIR=/usr/services/jirahome           #TODO - remove old dirs after 6 Sep
+#APP_INSTALL_DIR=/usr/services/jira-standalone #TODO - remove old dirs after 6 Sep
+APP_HOME_DIR=/srv/${APP_NAME}/home
+APP_INSTALL_DIR=/srv/${APP_NAME}/app
 
 # Jira/Confluence DB names
 # If no changes needed, set them the same
 # (if both are the same, no updates will be attempted)
 # TODO - can be removed once all databases are local
-DB_NAME_OLD=
+DB_NAME_OLD=jira5
 DB_NAME_NEW=$DB_NAME_OLD
+#DB_NAME_NEW=jira5test
 
 # arrays of service names
 # TODO - remove CRASHPLAN when no longer appropriate
 SYSTEM_SERVICES_TO_STOP=( puppet telegraf crashplan $APP_NAME )
+#SYSTEM_SERVICES_TO_STOP=( puppet telegraf xcatpostinit1 $APP_NAME )
 PUPPET_SERVICES_TO_STOP=( telegraf )
-
-VERBOSE=$YES
-DEBUG=$YES
 
 #
 #

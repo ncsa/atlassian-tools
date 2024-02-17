@@ -1,4 +1,5 @@
 import configparser
+import csv
 import json
 import logging
 import netrc
@@ -12,10 +13,18 @@ import time
 
 from functools import wraps
 
+# from http.client import HTTPConnection
+# HTTPConnection.debuglevel = 1
+
 logfmt = '%(levelname)s:%(funcName)s[%(lineno)d] %(message)s'
 loglvl = logging.INFO
-loglvl = logging.DEBUG
+#loglvl = logging.DEBUG
 logging.basicConfig( level=loglvl, format=logfmt )
+
+# requests_log = logging.getLogger("urllib3")
+# requests_log.setLevel(loglvl)
+# requests_log.propagate = True
+
 # logging.getLogger( 'libjira' ).setLevel( loglvl )
 # logging.getLogger( 'jira.JIRA' ).setLevel( loglvl )
 
@@ -58,12 +67,27 @@ def get_netrc():
     key = 'netrc'
     if key not in resources:
         n = netrc.netrc()
+        # n = netrc.netrc('/root/netrcfile')
         server = get_server()
         (login, account, password) = n.authenticators( server )
         resources['login'] = login
-        # resources['account'] = account
+        resources['account'] = account
         resources['password'] = password
         resources[key] = n
+    return resources[key]
+
+
+def get_login():
+    key = 'login'
+    if key not in resources:
+        get_netrc()
+    return resources[key]
+
+
+def get_account():
+    key = 'account'
+    if key not in resources:
+        get_netrc()
     return resources[key]
 
 
@@ -108,6 +132,16 @@ def err( msg ):
         resources[key] = []
     resources[key].append( msg )
     logging.error( msg )
+
+
+def get_role_id( name ):
+    key = 'roles'
+    if key not in resources:
+        path = f'role'
+        r = api_get( path )
+        rawdata = r.json()
+        resources[key] =  { d['name']: d['id'] for d in rawdata }
+    return resources[key][name]
 
 
 # https://stackoverflow.com/questions/1622943/timeit-versus-timing-decorator#27737385
@@ -173,8 +207,18 @@ def post_sudo_path( path, data ):
 def api_go( method, path, version='latest', **kw ):
     url = f'https://{get_server()}/rest/api/{version}/{path}'
     logging.debug( f'{method} {path}, {pprint.pformat(kw)}' )
-    r = get_session().request( method, url, **kw )
+    s = get_session()
+    # to use personal access token, must disable netrc function in requests
+    # s.trust_env = False
+    # token = get_account()
+    s.headers = {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        # "Authorization": f"Bearer {token}",
+        }
+    r = s.request( method, url, **kw )
     logging.debug( f'RETURN CODE .. {r}' )
+    # logging.debug( f'RETURN HEADERS .. {r.headers}' )
     r.raise_for_status()
     return r
 
@@ -186,21 +230,16 @@ def api_get( path ):
 def api_delete( path, data=None ):
     kwargs = { 'timeout': 1800 }
     if data:
-        kwargs.update ( {
-            'headers': { "Content-Type": "application/json" },
-            'json': data,
-        } )
+        kwargs.update ( { 'json': data } )
     return api_go( 'DELETE', path, **kwargs )
 
 
 def api_post( path, data):
-    headers = { "Content-Type": "application/json" }
-    return api_go( 'POST', path, json=data, headers=headers )
+    return api_go( 'POST', path, json=data )
 
 
 def api_put( path, data ):
-    headers = { "Content-Type": "application/json" }
-    return api_go( 'PUT', path, json=data, headers=headers )
+    return api_go( 'PUT', path, json=data )
 
 
 def web_delete_by_id( id, path, addl_form_data={} ):
@@ -240,12 +279,84 @@ def set_general_config():
     r = post_sudo_path( path, data )
 
 
+def add_application_access_groups():
+    jira_groups = get_config().options( 'Application Access Jira' )
+    path = 'applicationrole'
+    # r = api_get( path )
+    data = {
+        'key': 'jira-software',
+        'groups': jira_groups[:2],
+        }
+    r = api_put( path, data )
+    print( r.text )
+
+
+def get_project_roles( pid ):
+    r = api_get( f'project/{pid}/role' )
+    data = r.json()
+    role_names = list( data.keys() )
+    roles = {}
+    for role in role_names:
+        rid = get_role_id( role )
+        role_data = get_project_role_details( pid, rid )
+        # print( f"Project:{pid} Role:'{role}'" )
+        # pprint.pprint( role_data )
+        actors = [ f"{r['name']} ({r['displayName']})" for r in role_data['actors'] ]
+        roles[role] = actors
+    return roles
+
+
+def get_project_role_details( pid, role_id ):
+    path = f'project/{pid}/role/{role_id}'
+    r = api_get( path )
+    data = r.json()
+    return data
+
+
+def project_roles_as_csv():
+    r = api_get( 'project' )
+    data = r.json()
+    project_keys = { p['key'] : p['name'] for p in data }
+    # projects = {}
+    csv_rows = [ ['Project', 'Role', 'Members'] ]
+    for pid,p_name in project_keys.items():
+        roles = get_project_roles( pid )
+        # projects[pid] = {
+        #     'name': p_name,
+        #     'roles': roles,
+        #     }
+        for role, members in roles.items():
+            csv_rows.append( [ pid, role] + members )
+    # pprint.pprint( projects )
+    output = pathlib.Path( 'perms.csv' )
+    with output.open(mode='w', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerows( csv_rows )
+    # return projects
+
+
+
+
+def test_auth():
+    path = 'issue/SVCPLAN-2741'
+    r = api_get( path )
+    # print( r.text )
+
+
+
 def run():
     # starttime = time.time()
+
+    # test_auth()
 
     set_banner()
 
     set_general_config()
+
+    # add_application_access_groups() #returns error 400
+
+    # project_roles_as_csv()
+    # get_project_roles( 'SVCPLAN', 10002 )
 
     # elapsed = time.time() - starttime
     # logging.info( f'Finished in {elapsed} seconds!' )

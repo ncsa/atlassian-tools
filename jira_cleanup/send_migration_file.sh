@@ -40,7 +40,8 @@ copy_files() {
   echo "Copy files from $SRC_HOST to $TGT_HOST:"
   ssh $TGT_HOST "sudo mkdir -p $TGT_PATH"
   ssh $SRC_HOST "sudo tar vczf - -C ${SRC_PATH} ." | ssh $TGT_HOST "sudo tar xzf - -C $TGT_PATH"
-  ssh $TGT_HOST "sudo find $TGT_PATH -type f -exec chown jira:jira {} \;"
+  ssh $TGT_HOST "sudo chown -R jira:jira $TGT_PATH"
+  # ssh $TGT_HOST "sudo find $TGT_PATH -type f -exec chown jira:jira {} \;"
   # confirm file exists on target, exit if transfer failed
   echo
 }

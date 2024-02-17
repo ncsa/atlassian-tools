@@ -16,7 +16,7 @@ FILES=(
 for f in "${FILES[@]}" ; do
   tgt_dir=$( dirname "$f" )
   reference=$( find "$tgt_dir" -type f -print -quit )
-  cp "${BACKUP_DIR}/${f}" "${f}"
+  cp "${BACKUP_DIR}/${f}" "${f}"        #BACKUP_DIR defined in config.sh
   chmod --reference="$reference" "$f"
   chown --reference="$reference" "$f"
 done

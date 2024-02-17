@@ -6,8 +6,9 @@ YES=0
 NO=1
 VERBOSE=$YES
 DEBUG=$YES
+APP_NAME=jira
 
-VGS=( vg_pgsql vg_backups vg_confluence )
+VGS=( vg_pgsql vg_backups vg_$APP_NAME )
 
 ECHO=
 [[ $DEBUG -eq $YES ]] && ECHO=echo

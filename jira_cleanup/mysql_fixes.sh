@@ -12,15 +12,10 @@ die() {
   exit 99
 }
 
-prep() {
-  [[ -f "${MY_CNF}" ]] || die "File not found '${MY_CNF}'"
-  rsync "${MY_CNF}" ${HOST}:.my.cnf
-}
-
 
 run_sql() {
   fn="$1"
-  cat "$fn" | ssh $HOST 'mysql'
+  "${BASE}"/my_run_sql.sh "${HOST}" "$fn"
 }
 
 
@@ -73,8 +68,6 @@ fix_bad_sprints() {
 
 
 ### MAIN
-prep
-
 set -x
 
 # Not needed anymore
