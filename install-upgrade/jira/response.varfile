@@ -1,5 +1,5 @@
 # install4j response file for Jira Core 9.11.0
-app.install.service$Boolean=true
+app.install.service$Boolean=false
 app.jiraHome=/srv/jira/home
 existingInstallationDir=/opt/Jira Core
 launch.application$Boolean=false

@@ -1,5 +1,6 @@
-#Binary installers
+#Binary files
 *.bin
+*.jar
 
 # password files
 *.pwd
@@ -9,3 +10,7 @@
 *.input
 *.ids
 output
+*.sample
+*.csv
+*.tsv
+*.log

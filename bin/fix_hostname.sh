@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BASE=/root/atlassian-tools
+BASE=${HOME}/atlassian-tools
 
 . ${BASE}/conf/config.sh
 . ${BASE}/lib/utils.sh

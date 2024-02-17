@@ -1,10 +1,11 @@
-# install4j response file for Confluence 7.19.18
+# install4j response file for Confluence 8.5.0
 app.confHome=/srv/confluence/home
 app.install.service$Boolean=false
 existingInstallationDir=/opt/Confluence
 launch.application$Boolean=false
 portChoice=default
 sys.adminRights$Boolean=true
+sys.adminRightsUiRootUnix$Boolean=false
 sys.confirmedUpdateInstallationString=false
 sys.installationDir=/srv/confluence/app
 sys.languageId=en

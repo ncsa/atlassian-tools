@@ -1,26 +1,33 @@
-YES=1
-NO=0
+YES=0
+NO=1
 
 ### START OF USER CONFIGURABLE SECTION
 #
 #
 
 # These must be set or scripts will refuse to run
+# If no changes needed, set them the same
 IPADDR_OLD=
-IPADDR_NEW=
-HOSTNAME_OLD=
-HOSTNAME_NEW=
+IPADDR_NEW=$IPADDR_OLD
 
+HOSTNAME_OLD=
+HOSTNAME_NEW=$HOSTNAME_OLD
 
 # path to jira / confluence home & install dirs
+APP_NAME=jira
 APP_HOME_DIR=/usr/services/jirahome
 APP_INSTALL_DIR=/usr/services/jira-standalone
+
 # Jira/Confluence DB names
+# If no changes needed, set them the same
+# (if both are the same, no updates will be attempted)
+# TODO - can be removed once all databases are local
 DB_NAME_OLD=
-DB_NAME_NEW=
+DB_NAME_NEW=$DB_NAME_OLD
 
 # arrays of service names
-SYSTEM_SERVICES_TO_STOP=( puppet crashplan jira )
+# TODO - remove CRASHPLAN when no longer appropriate
+SYSTEM_SERVICES_TO_STOP=( puppet telegraf crashplan $APP_NAME )
 PUPPET_SERVICES_TO_STOP=( telegraf )
 
 VERBOSE=$YES
@@ -30,31 +37,39 @@ DEBUG=$YES
 #
 ### END OF USER CONFIGURABLE SECTION
 
-TODAY=$(date +%Y%m%d)
-NOW=$(date +%Y%m%dT%H%M%S)
-
 # ANSI escape codes for colors
 GREEN='\033[0;32m'
 RED='\033[0;31m'
 NC='\033[0m'  # No Color
+
+# Timestamp
+[[ -z "$TS" ]] && {
+  TS=$(date +%s)
+  TODAY=$(date -d "@$TS" +%Y%m%d)
+  NOW=$(date -d "@$TS" +%Y%m%dT%H%M%S)
+  export TS TODAY NOW
+}
+BACKUP_DIR="${HOME}/backups/${APP_NAME}/${NOW}"
 
 [[ $DEBUG -eq $YES ]] && VERBOSE=$YES
 
 
 # validate_config
 varnames=( \
-  TODAY \
-  NOW \
   IPADDR_OLD \
   IPADDR_NEW \
   HOSTNAME_OLD \
   HOSTNAME_NEW \
+  APP_NAME \
   APP_HOME_DIR \
   APP_INSTALL_DIR \
   DB_NAME_OLD \
   DB_NAME_NEW \
   SYSTEM_SERVICES_TO_STOP \
-  PUPPET_SERVICES_TO_STOP
+  PUPPET_SERVICES_TO_STOP \
+  TS \
+  TODAY \
+  NOW \
 )
 for v in "${varnames[@]}"; do
   if [[ -z "${!v}" ]] ; then

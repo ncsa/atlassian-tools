@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BASE=/root/atlassian-tools
+BASE=${HOME}/atlassian-tools
 BIN="$BASE"/bin
 
 . ${BASE}/conf/config.sh

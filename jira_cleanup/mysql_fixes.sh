@@ -3,16 +3,18 @@
 ### VARIABLES
 BASE=$( dirname "$0" )
 HOST=jira-test
+MY_CNF="${BASE}"/my.cnf.${HOST}
 
 
 ### FUNCTIONS
 die() {
-  echo "ERROR $*"
+  echo "ERROR $*" 2>&1
   exit 99
 }
 
 prep() {
-  rsync "${BASE}"/my.cnf ${HOST}:.my.cnf
+  [[ -f "${MY_CNF}" ]] || die "File not found '${MY_CNF}'"
+  rsync "${MY_CNF}" ${HOST}:.my.cnf
 }
 
 

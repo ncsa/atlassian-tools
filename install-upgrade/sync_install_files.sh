@@ -12,6 +12,7 @@ APP="$2"
 [[ -z "$APP" ]] && die "missing app name"
 [[ -d "$APP" ]] || die "no directory matching name '$APP'"
 
-/usr/bin/ssh "${REMOTE_HOST}" "mkdir -p ${HOME}/${APP}"
-/usr/bin/rsync -rtvPL "${APP}"/ "${REMOTE_HOST}":"${APP}"
-/usr/bin/rsync -tvP ./02_installer.sh "${REMOTE_HOST}":"${APP}"
+/usr/bin/rsync -rtvPL \
+  --rsync-path='sudo rsync' \
+  "${APP}"/ \
+  "${REMOTE_HOST}":/root/atlassian-tools/install-upgrade/"${APP}"
