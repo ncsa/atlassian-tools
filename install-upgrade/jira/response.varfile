@@ -2,7 +2,7 @@
 app.install.service$Boolean=true
 app.jiraHome=/srv/jira/home
 existingInstallationDir=/opt/Jira Core
-launch.application$Boolean=true
+launch.application$Boolean=false
 portChoice=default
 sys.adminRights$Boolean=true
 sys.confirmedUpdateInstallationString=false

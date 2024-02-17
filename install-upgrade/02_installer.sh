@@ -50,15 +50,6 @@ install_admin_pwd() {
 }
 
 
-restart_app() {
-  set -x
-  sleep 120
-  "${APPDIR}/bin/stop-${APPNAME}.sh"
-  sleep 20
-  "${APPDIR}/bin/start-${APPNAME}.sh"
-}
-
-
 print_usage() {
   cat <<ENDHERE
 ${PRG}
@@ -106,8 +97,6 @@ if [[ "${action}" == 'install' ]] ; then
     disable_notifications
 
     install_admin_pwd
-
-    restart_app
   }
 elif [[ "${action}" == 'configonly' ]] ; then
   install_config

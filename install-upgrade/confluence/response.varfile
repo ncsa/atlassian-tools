@@ -2,7 +2,7 @@
 app.confHome=/srv/confluence/home
 app.install.service$Boolean=true
 existingInstallationDir=/opt/Confluence
-launch.application$Boolean=true
+launch.application$Boolean=false
 portChoice=default
 sys.adminRights$Boolean=true
 sys.adminRightsUiRootUnix$Boolean=false
