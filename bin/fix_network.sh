@@ -1,13 +1,13 @@
 #!/bin/bash
 
-BASE=/root/atlassian-tools
+BASE=${HOME}/atlassian-tools
 
 . ${BASE}/conf/config.sh
 . ${BASE}/lib/utils.sh
 
 [[ $VERBOSE -eq $YES ]] && set -x
 
-IFCFG=( $(find /etc/sysconfig/network-scripts/ -maxdepth 1 -type f -name 'ifcfg-eno1*' -print) )
+IFCFG=( $( grep -l "$IPADDR_OLD" /etc/sysconfig/network-scripts/* ) )
 [[ "${#IFCFG[@]}" -gt 1 ]] && die "Multiple ifcfg files found"
 
 
@@ -16,5 +16,6 @@ sed_opts=( '-i' )
 sed "${sed_opts[@]}" \
   -e '/^UUID\|^HWADDR/ d' \
   -e "/^IPADDR0=/ c IPADDR0=${IPADDR_NEW}" \
+  -e "/^IPADDR=/ c IPADDR=${IPADDR_NEW}" \
   "${IFCFG}"
 

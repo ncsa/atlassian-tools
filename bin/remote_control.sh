@@ -1,5 +1,10 @@
 #!/usr/bin/bash
 
+BASE=${HOME}/atlassian-tools
+
+. ${BASE}/conf/config.sh
+. ${BASE}/lib/utils.sh
+
 ### VARIABLES
 APPDIR=''
 HOST=''
@@ -9,13 +14,6 @@ SERVICE=''
 
 
 ### FUNCTIONS
-die() {
-  echo "ERROR $*" >&2
-  kill 0
-  exit 99
-}
-
-
 get_host() {
   HOST="$1"
   [[ -z "$HOST" ]] && die 'Missing host'
@@ -44,8 +42,11 @@ get_service() {
 set_appdir() {
   assert_service
   case "$HOST" in
-    jira-test)
+    jira-test|jira)
       APPDIR=/usr/services/jira-standalone
+      ;;
+    wiki-test|wiki)
+      APPDIR=/usr/services/confluence
       ;;
     *)
       APPDIR="/srv/${SERVICE}/app"
@@ -66,8 +67,7 @@ mk_cmd() {
       echo "${APPDIR}/bin/${ACTION}-${SERVICE}.sh"
       ;;
     status)
-      set_appdir
-      # cmd='test $(ps -efw | grep java | grep jira | wc -l) -eq 1 && echo running || echo stopped'
+      assert_service
       echo "test \$(ps -efw | grep java | grep ${SERVICE} | grep -v grep | wc -l) -eq 1 && echo running || echo stopped"
       ;;
     logs)

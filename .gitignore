@@ -1,5 +1,6 @@
-#Binary installers
+#Binary files
 *.bin
+*.jar
 
 # password files
 *.pwd
