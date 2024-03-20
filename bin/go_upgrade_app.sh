@@ -100,3 +100,5 @@ elif [[ $ACTION == 'finish' ]] ; then
   "${BIN}"/set_services.sh $ABLEMENT
 
 fi
+
+echo "Elapsed time: '$SECONDS' seconds."
