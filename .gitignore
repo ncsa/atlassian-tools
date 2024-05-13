@@ -7,10 +7,19 @@
 *.cnf
 
 # test files
-*.input
-*.ids
-output
-*.sample
 *.csv
+*.ids
+*.input
+*.sample
 *.tsv
+*.txt
+NOTES
+output
+
+# log files
 *.log
+
+# working files
+*.swp
+*.tar
+attachments/

@@ -67,6 +67,7 @@ fi
 # See also:
 # https://confluence.atlassian.com/confkb/how-to-adjust-the-session-timeout-for-confluence-126910597.html
 # https://confluence.atlassian.com/jirakb/change-the-default-session-timeout-to-avoid-user-logout-in-jira-server-604209887.html
+# TODO - Is this needed anymore after change to SSO via CiLogon?
 WEB_XML=''
 if [[ $APP_NAME == 'jira' ]] ; then
   WEB_XML="$APP_INSTALL_DIR"/atlassian-jira/WEB-INF/web.xml
