@@ -13,4 +13,6 @@ output
 *.sample
 *.csv
 *.tsv
+
+# log files
 *.log
