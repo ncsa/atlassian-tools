@@ -11,3 +11,6 @@
 *.ids
 output
 *.sample
+*.csv
+*.tsv
+*.log
