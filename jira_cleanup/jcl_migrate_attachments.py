@@ -23,12 +23,12 @@ logging.getLogger( 'libjira' ).setLevel( loglvl )
 
 resources = {} #module level resources
 
-def get_jira():
-    key = 'jira_connection'
+def get_jira( servername ):
+    key = f'jira_connection_{servername}'
     try:
         j = resources[key]
     except KeyError:
-        j = libjira.jira_login()
+        j = libjira.jira_login( jira_server=f'{servername}.ncsa.illinois.edu' )
     return j
 
 
@@ -180,8 +180,7 @@ def slug_to_filepath( slug ):
 
 if __name__ == '__main__':
 
-    # TEST CONNECTION
-    # print( json.dumps( get_jira().issue('SVCPLAN-398').raw ) )
+
 
     # # elems = [ f'SVCPLAN-{x}' for x in range( 289, 295 ) ]
     # elems = [ f'SVCPLAN-{x}' for x in range( 289, 292 ) ]
@@ -208,3 +207,35 @@ if __name__ == '__main__':
             print( f"{at_dir}" )
     elif action == 'migrate_attachments':
         print( action )
+        jira = get_jira('jira-test')
+        # TEST CONNECTION
+        # issue = jira.issue('SVC-5118')
+        # print( json.dumps( issue.raw ) )
+        # VIEW ATTACHMENT INFO
+        # <JIRA Attachment:
+        #   filename='Scan_Report_NCSA___SET_mgmt_3003_ports___20211124___20211124_ncsa_cc_20211124.pdf',
+        #   id='50071',
+        #   mimeType='application/pdf'>
+        # for at in issue.fields.attachment:
+        #     pprint.pprint( at )
+        # Walk filesystem for issues that have attachments
+        # attachments_dir/TICKET-ID/attachment_file
+        attachments_dir = pathlib.Path( get_args().attachments_dir )
+        errors = []
+        for root, dirs, files in attachments_dir.walk():
+            # print( f'{root} ... {files}' )
+            # for f in files:
+            #     ticket_id = root.name
+            #     print( f'{ticket_id} / {f}' )
+            for d in dirs:
+                # directory name will be the TICKET-ID
+                print( d )
+                issue = jira.issue( d )
+                for at in issue.fields.attachment:
+                    local_file = root / d / at.id
+                    if local_file.exists():
+                        print( f'    {at.id} -> {local_file}' )
+                    else:
+                        errors.append( local_file )
+        for e in errors:
+            print( f'NOT FOUND: {e}' )
