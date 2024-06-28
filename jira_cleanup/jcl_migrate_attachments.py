@@ -1,8 +1,11 @@
-import collections
+import argparse
 import json
 import logging
 import pprint
 import sys
+import csv
+import pathlib
+import textwrap
 
 # Add /app to import path
 sys.path.append( '/app' )
@@ -29,21 +32,35 @@ def get_jira():
     return j
 
 
-# def get_all_projects():
-#     j = get_jira()
-#     key = 'all_projects'
-#     if key not in resources:
-#         resources[key] = { x.key:x for x in j.projects() }
-#     return resources[key]
-
-
-# def print_all_projects():
-#     by_name = get_all_projects()
-#     for key in sorted(by_name.keys()):
-#         name = by_name[key].name
-#         id = by_name[key].id
-#         print( f'{key} : {name} ({id})' )
-
+def get_args( params=None ):
+    key = 'args'
+    if key not in resources:
+        constructor_args = {
+            'formatter_class': argparse.ArgumentDefaultsHelpFormatter,
+            'description': textwrap.dedent( '''\
+                Create list of attachment directories for tickets provided.
+                Add attachments from old Jira tickets to new JSM tickets.
+                '''),
+            'epilog': textwrap.dedent( '''\
+                NETRC:
+                    Jira login credentials should be stored in ~/.netrc.
+                    Machine name should be hostname only.
+                '''),
+            }
+        parser = argparse.ArgumentParser( **constructor_args )
+        # parser.add_argument( '-d', '--debug', action='store_true' )
+        # parser.add_argument( '-v', '--verbose', action='store_true' )
+        parser.add_argument( '--mk_paths',
+            dest='action', action='store_const', const='mk_paths' )
+        parser.add_argument( '--migrate_attachments',
+            dest='action', action='store_const', const='migrate_attachments' )
+        parser.add_argument( '--attachments_dir', default='./attachments',
+            help='Path to attachments dir' )
+        args = parser.parse_args( params )
+        if not args.action:
+            raise UserWarning( "Exacly one of --mk_paths or --migrate_attachments must be specified." )
+        resources[key] = args
+    return resources[key]
 
 # def get_all_fields():
 #     j = get_jira()
@@ -53,27 +70,12 @@ def get_jira():
 #     return resources[key]
 
 
-# def print_all_fields():
-#     by_name = { v['name']:k for k,v in get_all_fields().items() }
-#     for name in sorted(by_name.keys()):
-#         id = by_name[name]
-#         print( f'{name} : {id}' )
-
-
 # def get_issue_link_types():
 #     j = get_jira()
 #     key = 'issue_link_types'
 #     if key not in resources:
 #         resources[key] = { x.id:x for x in j.issue_link_types() }
 #     return resources[key]
-
-
-# def print_issue_link_types():
-#     r = get_issue_link_types()
-#     by_name = { v.name:k for k,v in get_issue_link_types().items() }
-#     for name in sorted(by_name.keys()):
-#         id = by_name[name]
-#         print( f'{name} : {id}' )
 
 
 # def get_labels( issue ):
@@ -159,16 +161,27 @@ def dump_issue( issue ):
 #         print( f"\t{link_text} {link.remote_issue.key}" )
 
 
+def tsv_to_dict( path ):
+    rv = {}
+    with path.open() as fh:
+        reader = csv.reader( fh, delimiter='\t' )
+        rv = { row[0]:row[1] for row in reader }
+    return rv
+
+
+def slug_to_filepath( slug ):
+    base = pathlib.Path( get_args().attachments_dir )
+    prj, ident = slug.split('-')
+    # convert ident into subdir name
+    scalar = int(ident) // 10000
+    subdir = 10000 + (scalar * 10000)
+    return base / prj / str(subdir) / slug
+
+
 if __name__ == '__main__':
 
-    # print( ">>>FIELDS" )
-    # print_all_fields()
-    # print( ">>>ISSUE LINK TYPES" )
-    # print_issue_link_types()
-    # print( ">>>PROJECTS" )
-    # print_all_projects()
-
-    print( json.dumps( get_jira().issue('SVCPLAN-398').raw ) )
+    # TEST CONNECTION
+    # print( json.dumps( get_jira().issue('SVCPLAN-398').raw ) )
 
     # # elems = [ f'SVCPLAN-{x}' for x in range( 289, 295 ) ]
     # elems = [ f'SVCPLAN-{x}' for x in range( 289, 292 ) ]
@@ -181,3 +194,17 @@ if __name__ == '__main__':
     # #     add_childof_label( i )
     #     # link_to_parent( i )
     #     print_issue_summary( i )
+
+    # GET ISSUE MAP FROM CSV
+    infile = pathlib.Path( 'issue_migration_map.csv' )
+    issue_map = tsv_to_dict( infile )
+    # pprint.pprint( issue_map )
+
+    action = get_args().action
+    if action == 'mk_paths':
+        for k,v in issue_map.items():
+            at_dir = slug_to_filepath( k )
+            # print( f"{k} -> {at_dir}" )
+            print( f"{at_dir}" )
+    elif action == 'migrate_attachments':
+        print( action )
