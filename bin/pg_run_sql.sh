@@ -39,8 +39,8 @@ get_files() {
 prep() {
   CONF=~/.pgpass.cnf.${HOST}
   [[ -f "${CONF}" ]] || die "config file not found '${CONF}'"
-  rsync "${CONF}" ${HOST}:.pgpass
-  ssh ${HOST} chmod 600 .pgpass
+  rsync "${CONF}" ${HOST}:.pgpass || die 'failed to rsync pgpass file'
+  ssh ${HOST} chmod 600 .pgpass || die 'failed to chmod remote pgpass file'
 }
 
 

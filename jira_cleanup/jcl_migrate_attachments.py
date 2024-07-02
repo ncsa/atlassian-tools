@@ -6,6 +6,7 @@ import sys
 import csv
 import pathlib
 import textwrap
+import jira
 
 # Add /app to import path
 sys.path.append( '/app' )
@@ -30,6 +31,14 @@ def get_jira( servername ):
     except KeyError:
         j = libjira.jira_login( jira_server=f'{servername}.ncsa.illinois.edu' )
     return j
+
+
+def get_old_jira():
+    return get_jira( 'jira-test' )
+
+
+def get_jsm():
+    return get_jira( 'jira-dev-dr1' )
 
 
 def get_args( params=None ):
@@ -62,111 +71,31 @@ def get_args( params=None ):
         resources[key] = args
     return resources[key]
 
-# def get_all_fields():
-#     j = get_jira()
-#     key = 'all_fields'
-#     if key not in resources:
-#         resources[key] = { x['id']:x for x in j.fields() }
-#     return resources[key]
+
+def get_issuemap():
+    key = 'issuemap'
+    if key not in resources:
+        infile = pathlib.Path( 'attachment_migration_map.csv' )
+        with infile.open() as fh:
+            reader = csv.reader( fh, delimiter='|' )
+            resources[key] = { row[0].strip():row[1].strip() for row in reader }
+    return resources[key]
 
 
-# def get_issue_link_types():
-#     j = get_jira()
-#     key = 'issue_link_types'
-#     if key not in resources:
-#         resources[key] = { x.id:x for x in j.issue_link_types() }
-#     return resources[key]
+def debug( msg ):
+    logging.info( msg )
 
 
-# def get_labels( issue ):
-#     # return get_jira().issue( id ).fields.labels
-#     return issue.fields.labels
+def info( msg ):
+    logging.info( msg )
+
+
+def error( msg ):
+    logging.error( msg )
 
 
 def dump_issue( issue ):
     pprint.pprint( issue.raw )
-
-
-#def get_linked_issues( issue ):
-#    linked_issues = []
-#    for link in issue.fields.issuelinks:
-#        # l_type = link['type']
-#        try:
-#            remote_issue = link.inwardIssue
-#            direction = 'inward'
-#        except AttributeError:
-#            remote_issue = link.outwardIssue
-#            direction = 'outward'
-#        linked_issues.append(
-#            Linked_Issue(
-#                remote_issue=remote_issue,
-#                link_type=link.type,
-#                direction=direction
-#            )
-#        )
-#    return linked_issues
-
-
-#def get_parent( issue ):
-#    #issue = get_jira().issue( id )
-#    try:
-#        parent = issue.fields.parent
-#    except AttributeError:
-#        parent = None
-#    return parent
-
-
-#def get_all_subtasks():
-#    jql = 'project = "Service Planning" and issuetype = Sub-task and resolution is EMPTY'
-#    return get_jira().search_issues( jql, maxResults=9999 )
-
-
-#def add_label( issue, new_label ):
-#    issue.fields.labels.append( new_label )
-#    issue.update( fields={"labels":issue.fields.labels}, notify=False )
-
-
-#def add_childof_label( issue ):
-#    p = get_parent( issue )
-#    parent_label = f'childof{p}'
-#    add_label( issue, parent_label )
-
-
-#def link_to_parent( issue, parent=None ):
-#    if parent is None:
-#        parent = get_parent( issue )
-#    if parent is None:
-#        logging.warn( f"No parent for issue '{issue.key}'" )
-#    logging.info( f'Parent={parent} Child={issue}' )
-#    j = get_jira()
-#    j.create_issue_link(
-#        type='Ancestor',
-#        inwardIssue=parent.key,
-#        outwardIssue=issue.key
-#        )
-
-
-# def print_issue_summary( issue ):
-#     print( f"{issue}" )
-#     parent = get_parent( issue )
-#     print( f"\tParent {parent}" )
-#     labels = get_labels( issue )
-#     print( f"\tLabels {labels}" )
-#     links = get_linked_issues( issue )
-#     for link in links:
-#         if link.direction == 'inward':
-#             link_text = link.link_type.inward
-#         else:
-#             link_text = link.link_type.outward
-#         print( f"\t{link_text} {link.remote_issue.key}" )
-
-
-def tsv_to_dict( path ):
-    rv = {}
-    with path.open() as fh:
-        reader = csv.reader( fh, delimiter='\t' )
-        rv = { row[0]:row[1] for row in reader }
-    return rv
 
 
 def slug_to_filepath( slug ):
@@ -178,64 +107,108 @@ def slug_to_filepath( slug ):
     return base / prj / str(subdir) / slug
 
 
+def mk_paths():
+    for k,v in get_issuemap().items():
+        at_dir = slug_to_filepath( k )
+        # print( f"{k} -> {at_dir}" )
+        print( f"{at_dir}" )
+
+
+
+def migrate_attachments():
+    oldjira = get_old_jira()
+    newjira = get_jsm()
+    # Walk filesystem for issues that have attachments
+    # ... dir structure looks like:
+    #     attachments_dir/TICKET-KEY/file
+    attachments_dir = pathlib.Path( get_args().attachments_dir )
+    for root, dirs, files in attachments_dir.walk():
+        for d in dirs:
+            # directory name will be the TICKET-KEY
+            old_key = str(d)
+            new_key = get_issuemap()[ old_key ]
+            try:
+                old_issue = oldjira.issue( old_key )
+            except jira.exceptions.JIRAError as e:
+                if 'Issue Does Not Exist' in e.text:
+                    error( f'source issue not found: {old_key} -> {new_key}' )
+                    continue
+            # debug( f'{old_key}\t{old_issue.fields.summary}' )
+            try:
+                new_issue = newjira.issue( new_key )
+            except jira.exceptions.JIRAError as e:
+                if 'Issue Does Not Exist' in e.text:
+                    error( f'target issue not found: {old_key} -> {new_key}' )
+                    continue
+            # debug( f'OK: {old_key} -> {new_key}' )
+            # debug( f'{new_key}\t{new_issue.fields.summary}' )
+
+            # get filenames of any existing attachments in new issue
+            existing_filenames = [ a.filename for a in new_issue.fields.attachment ]
+
+            # get attachments from old_issue; add to new_issue
+            for at in old_issue.fields.attachment:
+                if at.filename in existing_filenames:
+                    # don't re-add attachments with same filename
+                    info( f"SKIP attachment '{at.filename}' already exists for ticket '{new_key}'" )
+                    continue
+                local_file = root / d / at.id
+                if not local_file.exists():
+                    error( f'file not found: {local_file}' )
+                    continue
+                info( f"ADD attachment '{at.filename}' to ticket '{new_key}'" )
+                # newjira.add_attachment(
+                #     issue = new_issue,
+                #     attachment = local_file,
+                #     filename = at.filename
+                #     )
+
+
 if __name__ == '__main__':
 
-
-
-    # # elems = [ f'SVCPLAN-{x}' for x in range( 289, 295 ) ]
-    # elems = [ f'SVCPLAN-{x}' for x in range( 289, 292 ) ]
-    # jql = f'id in ({",".join(elems)})'
-    # issues = get_jira().search_issues( jql, maxResults=9999 )
-
-    # # issues = get_all_subtasks()
-
-    # for i in issues:
-    # #     add_childof_label( i )
-    #     # link_to_parent( i )
-    #     print_issue_summary( i )
-
-    # GET ISSUE MAP FROM CSV
-    infile = pathlib.Path( 'issue_migration_map.csv' )
-    issue_map = tsv_to_dict( infile )
-    # pprint.pprint( issue_map )
+    # TEST issue_map
+    # pprint.pprint( get_issuemap() )
 
     action = get_args().action
     if action == 'mk_paths':
-        for k,v in issue_map.items():
-            at_dir = slug_to_filepath( k )
-            # print( f"{k} -> {at_dir}" )
-            print( f"{at_dir}" )
+        mk_paths()
     elif action == 'migrate_attachments':
-        print( action )
-        jira = get_jira('jira-test')
-        # TEST CONNECTION
-        # issue = jira.issue('SVC-5118')
-        # print( json.dumps( issue.raw ) )
-        # VIEW ATTACHMENT INFO
-        # <JIRA Attachment:
-        #   filename='Scan_Report_NCSA___SET_mgmt_3003_ports___20211124___20211124_ncsa_cc_20211124.pdf',
-        #   id='50071',
-        #   mimeType='application/pdf'>
-        # for at in issue.fields.attachment:
-        #     pprint.pprint( at )
-        # Walk filesystem for issues that have attachments
-        # attachments_dir/TICKET-ID/attachment_file
-        attachments_dir = pathlib.Path( get_args().attachments_dir )
-        errors = []
-        for root, dirs, files in attachments_dir.walk():
-            # print( f'{root} ... {files}' )
-            # for f in files:
-            #     ticket_id = root.name
-            #     print( f'{ticket_id} / {f}' )
-            for d in dirs:
-                # directory name will be the TICKET-ID
-                print( d )
-                issue = jira.issue( d )
-                for at in issue.fields.attachment:
-                    local_file = root / d / at.id
-                    if local_file.exists():
-                        print( f'    {at.id} -> {local_file}' )
-                    else:
-                        errors.append( local_file )
-        for e in errors:
-            print( f'NOT FOUND: {e}' )
+        migrate_attachments()
+
+
+
+
+
+
+# TEST CONNECTION
+# issue = oldjira.issue('SVC-5118')
+# print( json.dumps( issue.raw ) )
+
+# VIEW ATTACHMENT INFO
+# for at in issue.fields.attachment:
+#     pprint.pprint( at )
+# <JIRA Attachment:
+#   filename='Scan_Report_NCSA___SET_mgmt_3003_ports___20211124___20211124_ncsa_cc_20211124.pdf',
+#   id='50071',
+#   mimeType='application/pdf'>
+
+# ATTACHMENT JSON
+# {'author': {'active': True,
+#             'avatarUrls': {'16x16': 'https://jira.ncsa.illinois.edu/secure/useravatar?size=xsmall&avatarId=10122',
+#                            '24x24': 'https://jira.ncsa.illinois.edu/secure/useravatar?size=small&avatarId=10122',
+#                            '32x32': 'https://jira.ncsa.illinois.edu/secure/useravatar?size=medium&avatarId=10122',
+#                            '48x48': 'https://jira.ncsa.illinois.edu/secure/useravatar?avatarId=10122'},
+#             'displayName': 'Pallavi Jain',
+#             'emailAddress': 'pjain15@illinois.edu',
+#             'key': 'JIRAUSER36800',
+#             'name': 'pjain15',
+#             'self': 'https://jira.ncsa.illinois.edu/rest/api/2/user?username=pjain15',
+#             'timeZone': 'America/Chicago'},
+#  'content': 'https://jira.ncsa.illinois.edu/secure/attachment/62174/image-2023-03-03-14-50-55-959.png',
+#  'created': '2023-03-03T14:50:56.000-0600',
+#  'filename': 'image-2023-03-03-14-50-55-959.png',
+#  'id': '62174',
+#  'mimeType': 'image/png',
+#  'self': 'https://jira.ncsa.illinois.edu/rest/api/2/attachment/62174',
+#  'size': 105502,
+#  'thumbnail': 'https://jira.ncsa.illinois.edu/secure/thumbnail/62174/_thumb_62174.png'}
