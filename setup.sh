@@ -7,7 +7,7 @@ TS=$(date +%s)
 INSTALL_DIR="${HOME}"/atlassian-tools
 
 # Install regular dir contents
-for d in bin conf lib jira_cleanup wiki_cleanup ; do
+for d in bin conf lib ; do
   tgt="$INSTALL_DIR/$d"
   src="$BASE/$d"
   mkdir -p "$tgt"
