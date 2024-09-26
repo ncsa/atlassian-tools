@@ -56,23 +56,3 @@ XML="$APP_INSTALL_DIR"/conf/server.xml
 grep -F 'proxyName=' "$XML" | grep -q "$HOSTNAME_NEW" \
   || die "New hostname not found in '$XML'"
 success "server.xml has new hostname"
-
-# fix_app_config.sh
-# check db config ... only if old differs from new
-if [[ "$DB_NAME_OLD" != "$DB_NAME_NEW" ]] ; then
-  case "$APP_NAME" in
-    jira)
-      DB_CONF="$APP_HOME_DIR"/dbconfig.xml
-      PTRN="<url>jdbc:"
-      ;;
-    confluence)
-      DB_CONF="$APP_HOME_DIR"/confluence.cfg.xml
-      PTRN='hibernate\.connection\.url'
-      ;;
-  esac
-  grep -F "/${DB_NAME_OLD}?" "$DB_CONF" \
-    && die "Old DB name found in dbconfig.xml"
-  grep -F "/${DB_NAME_NEW}?" "$DB_CONF" \
-  || die "New DB name NOT found in dbconfig.xml"
-  success "DB config looks good!"
-fi

@@ -4,9 +4,13 @@ Atlassian tools and scripts for Confluence and Jira servers
 # INSTALL
 Install onto the production server.
 ```
+APP=confluence #set to one of 'confluence' or 'jira'
 export QS_GIT_REPO=https://github.com/ncsa/atlassian-tools.git
 #export QS_GIT_BRANCH=branch_name  #optional - specify a branch other than main
 curl https://raw.githubusercontent.com/andylytical/quickstart/main/quickstart.sh | bash
+mkdir -p ~/.config/atlassian-tools/
+cp -n ~/atlassian-tools/conf/config.sh-${APP}-sample ~/.config/atlassian-tools/config.sh
+ln -s ~/.config/atlassian-tools/config.sh ~/atlassian-tools/conf/
 ```
 
 # Create a test instance on a clone of prod

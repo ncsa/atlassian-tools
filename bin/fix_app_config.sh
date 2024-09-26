@@ -43,25 +43,6 @@ success "Fixed hostname in server.xml"
 }
 
 
-# Fix DB config
-if [[ "$DB_NAME_OLD" == "$DB_NAME_NEW" ]] ; then
-  echo 'DB_NAME_OLD == DB_NAME_NEW, no changes needed ... skipping "Fix DB Config" step'
-else
-  case "$APP_NAME" in
-    jira)
-      DB_CONF="$APP_HOME_DIR"/dbconfig.xml
-      PTRN="<url>jdbc:"
-      ;;
-    confluence)
-      DB_CONF="$APP_HOME_DIR"/confluence.cfg.xml
-      PTRN='hibernate\.connection\.url'
-      ;;
-  esac
-  sed "${sed_opts[@]}" -e "s/$DB_NAME_OLD/$DB_NAME_NEW/g" "$DB_CONF"
-  success "Updated DB config"
-fi
-
-
 # Fix session timeout in web.xml
 # Historically, this was set to 12000 (8.3 days) ... why?
 # See also:

@@ -1,1 +1,0 @@
-../bin/my_run_sql.sh

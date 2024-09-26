@@ -22,13 +22,6 @@ APP_NAME=jira
 APP_HOME_DIR=/srv/${APP_NAME}/home
 APP_INSTALL_DIR=/srv/${APP_NAME}/app
 
-# Jira/Confluence DB names
-# If no changes needed, set them the same
-# (if both are the same, no updates will be attempted)
-# TODO - can be removed once all databases are local
-DB_NAME_OLD=jira5
-DB_NAME_NEW=$DB_NAME_OLD
-#DB_NAME_NEW=jira5test
 
 # arrays of service names
 # TODO - remove CRASHPLAN when no longer appropriate
@@ -58,21 +51,19 @@ BACKUP_DIR="${HOME}/backups/${APP_NAME}/${NOW}"
 
 
 # validate_config
-varnames=( \
-  IPADDR_OLD \
-  IPADDR_NEW \
-  HOSTNAME_OLD \
-  HOSTNAME_NEW \
-  APP_NAME \
-  APP_HOME_DIR \
-  APP_INSTALL_DIR \
-  DB_NAME_OLD \
-  DB_NAME_NEW \
-  SYSTEM_SERVICES_TO_STOP \
-  PUPPET_SERVICES_TO_STOP \
-  TS \
-  TODAY \
-  NOW \
+varnames=(
+  IPADDR_OLD
+  IPADDR_NEW
+  HOSTNAME_OLD
+  HOSTNAME_NEW
+  APP_NAME
+  APP_HOME_DIR
+  APP_INSTALL_DIR
+  SYSTEM_SERVICES_TO_STOP
+  PUPPET_SERVICES_TO_STOP
+  TS
+  TODAY
+  NOW
 )
 for v in "${varnames[@]}"; do
   if [[ -z "${!v}" ]] ; then
