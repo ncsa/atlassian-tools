@@ -58,14 +58,3 @@ This also works for Confluence, tested Feb 2024.
       1. Run the installer file manually, choose option 3 (upgrade)
       1. Restore the server.xml file:
          1. `/home/<USER>/<APP>/02_installer.sh -c`
-
-# Migration cleanup
-This requires docker. Will create a local Docker container running an image of
-containing this git repo. (Tested on Ubuntu 22.04.3 LTS.)
-
-1. Build a test server
-1. Create a file ~/.atlassian-tools-config.sh
-1. Create a file ~/.netrc
-1. `export BRANCH=SVCPLAN-4501/project_cleanup`
-1. `curl -o go_atlassian-tools.sh "https://raw.githubusercontent.com/ncsa/atlassian-tools/${BRANCH:-main}/go.sh"`
-1. `bash go_atlassian-tools.sh`
