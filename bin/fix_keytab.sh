@@ -15,5 +15,8 @@ KEYTAB_NEW="${KEYTAB}.${HOSTNAME_NEW}"
 $action mv "$KEYTAB" "${KEYTAB}.${HOSTNAME_OLD}"
 
 # put new keytab in place
-[[ -f "${KEYTAB_NEW}" ]] || die "cant find keytab file '${KEYTAB_NEW}'"
-$action ln -s "${KEYTAB_NEW}" "${KEYTAB}" 
+if [[ -f "${KEYTAB_NEW}" ]] ; then
+  $action ln -s "${KEYTAB_NEW}" "${KEYTAB}" 
+else
+  err "cant find keytab file '${KEYTAB_NEW}'"
+fi

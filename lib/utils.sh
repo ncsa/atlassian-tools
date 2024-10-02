@@ -6,11 +6,11 @@ BASE=${HOME}/atlassian-tools
 
 
 err() {
-	echo -e "${RED}✗ ERROR: $*${NC}" 1>&2
+	echo -e "${RED}✗ ERROR: $*${NC}" | tee /dev/stderr
 }
 
 success() {
-  echo -e "${GREEN}✓ $*${NC}"
+  echo -e "${GREEN}✓ $*${NC}" | tee /dev/stderr
 }
 
 

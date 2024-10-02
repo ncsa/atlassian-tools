@@ -31,7 +31,7 @@ verify_auth_fallback_status() {
   
   if [[ "$MODE" == "true" && "$_verify" == "0" ]]; then 
     echo "SSO Bypass successfully enabled"
-    echo "Access site at http://$MACHINE/login.action?auth_fallback to login."
+    echo "To login with username/password, go to: https://$MACHINE/login.jsp?auth_fallback"
     exit 0
   elif [[ "$MODE" == "false" && "$_verify" == "1" ]]; then 
     echo "SSO Bypass successfully disabled"

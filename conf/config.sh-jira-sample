@@ -17,16 +17,12 @@ HOSTNAME_NEW=$HOSTNAME_OLD
 
 # path to jira / confluence home & install dirs
 APP_NAME=jira
-#APP_HOME_DIR=/usr/services/jirahome           #TODO - remove old dirs after 6 Sep
-#APP_INSTALL_DIR=/usr/services/jira-standalone #TODO - remove old dirs after 6 Sep
 APP_HOME_DIR=/srv/${APP_NAME}/home
 APP_INSTALL_DIR=/srv/${APP_NAME}/app
 
 
 # arrays of service names
-# TODO - remove CRASHPLAN when no longer appropriate
-SYSTEM_SERVICES_TO_STOP=( puppet telegraf crashplan $APP_NAME )
-#SYSTEM_SERVICES_TO_STOP=( puppet telegraf xcatpostinit1 $APP_NAME )
+SYSTEM_SERVICES_TO_STOP=( puppet telegraf xcatpostinit1 $APP_NAME )
 PUPPET_SERVICES_TO_STOP=( telegraf )
 
 #

@@ -42,17 +42,24 @@ hostnamectl status --static | grep -q "$HOSTNAME_NEW" \
   || die "Hostname does NOT match '$HOSTNAME_NEW'"
 success "Hostname looks good!"
 
-# fix_keytab.sh
-# check keytab
-klist -k /etc/krb5.keytab | grep -q -F "${HOSTNAME_OLD}" \
-  && die "Old hostname still in keytab"
-klist -k /etc/krb5.keytab | grep -q -F "${HOSTNAME_NEW}" \
-  || die "New hostname NOT in keytab"
-success "KRB5 keytab looks good!"
-
 # fix_app_config.sh
 # check server.xml
 XML="$APP_INSTALL_DIR"/conf/server.xml
 grep -F 'proxyName=' "$XML" | grep -q "$HOSTNAME_NEW" \
   || die "New hostname not found in '$XML'"
 success "server.xml has new hostname"
+
+# fix_keytab.sh
+# check keytab
+# Not fatal on failure
+krb_ok=$YES
+klist -k /etc/krb5.keytab | grep -q -F "${HOSTNAME_OLD}" && {
+  err "Old hostname still in keytab"
+  krb_ok=$NO
+}
+klist -k /etc/krb5.keytab | grep -q -F "${HOSTNAME_NEW}" || {
+  err "New hostname NOT in keytab"
+  krb_ok=$NO
+}
+[[ $krb_ok -eq $YES ]] \
+&& success "KRB5 keytab looks good!"
