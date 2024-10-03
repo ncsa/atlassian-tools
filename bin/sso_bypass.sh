@@ -1,5 +1,9 @@
-MODE="false"
-# KEY="password"
+#!/bin/bash
+
+die() {
+  echo "ERROR - $*" 1>&2
+  exit 99
+}
 
 get_netrc_value() {
     local _machine=$1
@@ -10,15 +14,6 @@ get_netrc_value() {
       found && $1 == key {print $2; exit}
       $1 == "machine" && $2 != machine {found=0}
       ' ~/.netrc
-}
-
-is_object_null() {
-  local _obj=$1
-  if [ -z "$_obj" ]; then 
-    echo "Error: Either Base URL, key type, or Access Token was not provided"
-    echo "Run with -h option for help."
-    exit 1
-  fi
 }
 
 verify_auth_fallback_status() {
@@ -46,11 +41,11 @@ verify_auth_fallback_status() {
 }
 
 request_auth_fallback() {
-  is_object_null "$MACHINE"
-  is_object_null "$KEY"
   local _endpoint="https://"$MACHINE"/rest/authconfig/1.0/sso"
   local _token=$(get_netrc_value "$MACHINE" "$KEY")
-  is_object_null "$_token"
+  if [[ -z "$_token" ]] ; then
+    die "Unable to find '$KEY' for '$MACHINE' in netrc file"
+  fi
 
   local _status=$(curl -s --location --request PATCH "$_endpoint" \
   --header "Content-Type: application/json" \
@@ -67,32 +62,58 @@ print_usage() {
   cat <<ENDHERE
 ${_prg}
   Enable/Disable SSO Bypass on Confluence
-  Require: Save auth in .netrc 
-SYNOPSYS
-  ${_prg} [OPTIONS] [BASE URL] [KEY TYPE]
+  Requires: Valid credentials in ~/.netrc 
 
-  Ex. ${_prg} -e confluence.com account
+SYNOPSYS
+  ${_prg} [OPTIONS] HOSTNAME ACTION
+
+  Ex. ${_prg} jira.ncsa.illinois.edu enable
+  Ex. ${_prg} wiki.ncsa.illinois.edu disable
+
 OPTIONS
   -h --help Print this help
-  -e --enable Turn on SSO Bypass 
-  -d --disable Turn off SSO Bypass
+  -t --token   Name of the netrc token that has the Personal Access Token (from the Atlassian app)
 ENDHERE
 } 
 
-if [[ $# -eq 0 ]]; then 
-  echo "Error: No options were included"
-  echo "Run with -h option for help."
-  exit 1
-fi
+# if [[ $# -eq 0 ]]; then 
+#   echo "Error: No options were included"
+#   echo "Run with -h option for help."
+#   exit 1
+# fi
 
+KEY="account"
 ENDWHILE=0
-while [[ $# -gt 0 ]]  && [[ ENDWHILE -eq 0 ]] ; do 
-  case $1 in 
-    -h| --help) print_usage; exit 1;;
-    -e| --enable) MACHINE="$2"; KEY="$3"; MODE="true"; request_auth_fallback;;
-    -d| --disable) MACHINE="$2"; KEY="$3"; MODE="false"; request_auth_fallback;;
-     *) echo "Invalid option '$1'"; exit 1;;
-  esac 
+while [[ $# -gt 0 ]] && [[ $ENDWHILE -lt 0 ]] ; do
+  case $1 in
+    -h|--help) print_usage; exit 0;;
+    -t|--token)
+      KEY=$2
+      shift
+      ;;
+    --) ENDWHILE=1;;
+    -*) die "Invalid option '$1'";;
+     *) ENDWHILE=1; break;;
+  esac
   shift
 done
+MACHINE="$1"
+ACTION="$2"
 
+if [[ -z "$MACHINE" ]]; then
+  die "missing HOSTNAME"
+fi
+
+if [[ -z "$ACTION" ]]; then
+  die "missing ACTION"
+fi
+
+case $ACTION in
+  enable) MODE="true";;
+  disable) MODE="false";;
+  *)
+    die "Invalid ACTION '$ACTION'. Must be one of 'enable', 'disable'"
+    ;;
+esac
+
+request_auth_fallback

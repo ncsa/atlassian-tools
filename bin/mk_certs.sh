@@ -10,6 +10,5 @@ BIN="$BASE"/bin
 [[ $DEBUG -eq $YES ]] && action=echo
 
 $action certbot certonly -v -n \
-  --webroot -w "/var/www/html" \
-  --deploy-hook "/etc/letsencrypt/renewal-hooks-puppet/renew-deploy.sh" \
+  --standalone \
   -d ${HOSTNAME_NEW}
