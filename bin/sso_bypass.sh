@@ -84,7 +84,7 @@ ENDHERE
 
 KEY="account"
 ENDWHILE=0
-while [[ $# -gt 0 ]] && [[ $ENDWHILE -lt 0 ]] ; do
+while [[ $ENDWHILE -lt 1 ]] ; do
   case $1 in
     -h|--help) print_usage; exit 0;;
     -t|--token)

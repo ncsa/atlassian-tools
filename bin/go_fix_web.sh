@@ -8,6 +8,8 @@ BIN="$BASE"/bin
 
 [[ $VERBOSE -eq $YES ]] && set -x
 
+/bin/systemctl stop httpd
+
 "$BIN"/mk_certs.sh
 
 "$BIN"/fix_web_configs.sh
