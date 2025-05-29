@@ -13,6 +13,7 @@ CFG=${BASE}/conf/config.sh
 INSTALLER=''
 ACTION=''
 ABLEMENT=''
+INSTALLER_LIST=()
 
 [[ $VERBOSE -eq $YES ]] && set -x
 
@@ -37,6 +38,8 @@ run_installer() {
   /usr/bin/chmod +x "${INSTALLER}"
   "${INSTALLER}"
 }
+
+
 
 
 print_usage() {
@@ -82,16 +85,33 @@ while [[ $# -gt 0 ]] && [[ $ENDWHILE -eq 0 ]] ; do
 done
 
 if [[ $ACTION == 'start' ]] ; then
-
-  INSTALLER=$( get_installer )
+  
   assert_app_installed
-  assert_installer_exists
 
+  if [[ ${APP_NAME} == "confluence" ]]; then 
+    echo "Choose your Confluence installer: "
+    INSTALLER=$( get_installer )
+    assert_installer_exists
+    INSTALLER_LIST+=("${INSTALLER}")
+  elif [[ ${APP_NAME} == "jira" ]]; then
+    echo "Choose your Jira installer: "
+    INSTALLER=$( get_installer )
+    assert_installer_exists
+    INSTALLER_LIST+=("${INSTALLER}")
+
+    echo "Choose your JSM installer: "
+    INSTALLER=$( get_installer )
+    assert_installer_exists
+    INSTALLER_LIST+=("${INSTALLER}")
+  fi
+  
   "${BIN}"/backup_config_files.sh
 
   "${BIN}"/set_services.sh $ABLEMENT
 
-  run_installer
+  for INSTALLER in "${INSTALLER_LIST[@]}"; do
+    run_installer
+  done
 
   "${BIN}"/restore_config_files.sh
 
