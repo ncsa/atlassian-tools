@@ -26,7 +26,8 @@ verify_auth_fallback_status() {
   
   if [[ "$MODE" == "true" && "$_verify" == "0" ]]; then 
     echo "SSO Bypass successfully enabled"
-    echo "To login with username/password, go to: https://$MACHINE/login.action?auth_fallback"
+    echo "To login to Wiki with username/password, go to: https://$MACHINE/login.action?auth_fallback"
+    echo "To login to Jira with username/password, go to: https://$MACHINE/login.jsp?auth_fallback"
     exit 0
   elif [[ "$MODE" == "false" && "$_verify" == "1" ]]; then 
     echo "SSO Bypass successfully disabled"
