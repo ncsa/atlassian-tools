@@ -94,15 +94,12 @@ if [[ $ACTION == 'start' ]] ; then
     assert_installer_exists
     INSTALLER_LIST+=("${INSTALLER}")
   elif [[ ${APP_NAME} == "jira" ]]; then
-    echo "Choose your Jira installer: "
-    INSTALLER=$( get_installer )
-    assert_installer_exists
-    INSTALLER_LIST+=("${INSTALLER}")
-
     echo "Choose your JSM installer: "
     INSTALLER=$( get_installer )
     assert_installer_exists
     INSTALLER_LIST+=("${INSTALLER}")
+
+    # Jira should be installed via web-interface
   fi
   
   "${BIN}"/backup_config_files.sh
