@@ -22,7 +22,7 @@ APP_INSTALL_DIR=/srv/${APP_NAME}/app
 
 
 # arrays of service names
-SYSTEM_SERVICES_TO_STOP=( puppet telegraf xcatpostinit1 $APP_NAME )
+SYSTEM_SERVICES_TO_STOP=( puppet telegraf xcatpostinit1 postfix $APP_NAME )
 PUPPET_SERVICES_TO_STOP=( telegraf )
 
 #

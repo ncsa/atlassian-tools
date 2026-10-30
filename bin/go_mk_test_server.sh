@@ -11,8 +11,6 @@ BIN="$BASE"/bin
 
 "$BIN"/set_services.sh disable
 
-# "$BIN"/disable_mail.sh
-
 "$BIN"/set_notifications.sh disable
 
 "$BIN"/fix_network.sh

@@ -22,11 +22,11 @@ success "Notifications are DISABLED!"
 
 # fix_network.sh
 # new IP should be in ifcfg file
-grep -q "$IPADDR_NEW" /etc/sysconfig/network-scripts/* \
+grep -q "$IPADDR_NEW" /etc/sysconfig/network-scripts/ifcfg* \
   || die "Did not find new IP in ifcfg"
 success "New IP found in ifcfg!"
-# ensure old IP is no in any ifcfg files
-grep "$IPADDR_OLD" /etc/sysconfig/network-scripts/* \
+# ensure old IP is not in any ifcfg files
+grep "$IPADDR_OLD" /etc/sysconfig/network-scripts/ifcfg* \
   && die "Old IP was found in an ifcfg script"
 success "Old IP no longer found in ifcfg scripts!"
 
