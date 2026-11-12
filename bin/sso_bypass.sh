@@ -41,6 +41,20 @@ verify_auth_fallback_status() {
   fi
 }
 
+check_auth_fallback() {
+  local _endpoint="https://"$MACHINE"/rest/authconfig/1.0/sso"
+  local _token=$(get_netrc_value "$MACHINE" "$KEY")
+  if [[ -z "$_token" ]] ; then
+    die "Unable to find '$KEY' for '$MACHINE' in netrc file"
+  fi
+
+  #local _result=$(curl -s --location --request GET "$_endpoint" \
+  curl -s --location --request GET "$_endpoint" \
+    --header "Content-Type: application/json" \
+    --header "Authorization: Bearer $_token"
+  echo
+}
+
 request_auth_fallback() {
   local _endpoint="https://"$MACHINE"/rest/authconfig/1.0/sso"
   local _token=$(get_netrc_value "$MACHINE" "$KEY")
@@ -67,6 +81,7 @@ ${_prg}
 
 SYNOPSIS
   ${_prg} [OPTIONS] HOSTNAME ACTION
+  where ACTION is one of: enable, disable, check
 
   Ex. ${_prg} jira.ncsa.illinois.edu enable
   Ex. ${_prg} wiki.ncsa.illinois.edu disable
@@ -110,11 +125,18 @@ if [[ -z "$ACTION" ]]; then
 fi
 
 case $ACTION in
-  enable) MODE="true";;
-  disable) MODE="false";;
+  enable)
+    MODE="true"
+    request_auth_fallback
+    ;;
+  disable)
+    MODE="false"
+    request_auth_fallback
+    ;;
+  check)
+    check_auth_fallback
+    ;;
   *)
-    die "Invalid ACTION '$ACTION'. Must be one of 'enable', 'disable'"
+    die "Invalid ACTION '$ACTION'."
     ;;
 esac
-
-request_auth_fallback
