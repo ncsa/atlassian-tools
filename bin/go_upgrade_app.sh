@@ -99,10 +99,7 @@ if [[ $ACTION == 'start' ]] ; then
     assert_installer_exists
     INSTALLER_LIST+=("${INSTALLER}")
 
-    echo "Choose your JSM installer: "
-    INSTALLER=$( get_installer )
-    assert_installer_exists
-    INSTALLER_LIST+=("${INSTALLER}")
+    # JSM should be installed via web-interface
   fi
   
   "${BIN}"/backup_config_files.sh
